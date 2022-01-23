@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useDrag } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 
 const cardStyle = {
   border: '1px dashed gray',
@@ -11,6 +11,16 @@ const cardStyle = {
 
 const Card = ({ id, text, index}) => {
   const ref = useRef(null); 
+
+  const [{ handlerId }, drop] = useDrop({
+    accept: 'card',
+    collect(monitor) {
+      console.log('drop : ' + monitor.getHandlerId());
+      return {
+        handleId: monitor.getHandlerId(),
+      }
+    }
+  });
 
   const [{ isDragging }, drag] = useDrag({
     type: 'card',
@@ -25,9 +35,9 @@ const Card = ({ id, text, index}) => {
 
   const opacity = isDragging ? 0 : 1;
 
-  drag(ref);
+  drag(drop(ref));
   return (
-    <div style={{...cardStyle, opacity}}>
+    <div ref={ref} style={{...cardStyle, opacity}} data-handler-id={handlerId}>
       {text}
     </div>
   )
