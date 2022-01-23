@@ -14,6 +14,9 @@ const Card = ({ id, text, index}) => {
 
   const [{ isDragging }, drag] = useDrag({
     type: 'card',
+    item: () => {
+      return { id, index };
+    },
     collect: (monitor) => {
       console.log('drag');
       return { isDragging: monitor.isDragging() }
@@ -24,7 +27,7 @@ const Card = ({ id, text, index}) => {
 
   drag(ref);
   return (
-    <div style={ {...cardStyle, opacity} }>
+    <div style={{...cardStyle, opacity}}>
       {text}
     </div>
   )
