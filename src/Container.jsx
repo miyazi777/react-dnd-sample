@@ -63,6 +63,10 @@ export const Container = () => {
 
   // 要素の入れ替え処理
   const moveCard = useCallback((dragIndex, hoverIndex) => {
+    console.log('----------------------- move card ---------------------------')
+    console.log('dragIndex ' + dragIndex);
+    console.log('hoverIndex ' + hoverIndex);
+    // 入れ替え
     const dragCard = cards[dragIndex];
     setCards(update(cards, {
       $splice: [
@@ -70,11 +74,14 @@ export const Container = () => {
         [hoverIndex, 0, dragCard],
       ],
     }));
+    console.log('---------------------------');
+    cards.map(card => console.log(`id: ${card.id} text: ${card.text}`))
+    console.log('---------------------------');
   }, [cards]);
 
   return ( 
     <>
-      <div style={{width: 400}}>
+      <div style={{width: 100}}>
         {cards.map((card, index) => 
           (<Card key={card.id} text={card.text} index={index} moveCard={moveCard} />)
         )}
