@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import update from 'immutability-helper';
 
 const cardStyle = {
   border: '1px dashed gray',
@@ -9,7 +10,7 @@ const cardStyle = {
   cursor: 'move',
 }
 
-const Card = ({ id, text, index}) => {
+const Card = ({ id, text, index, moveCard}) => {
   const ref = useRef(null); 
 
   const [{ handlerId }, drop] = useDrop({
@@ -19,6 +20,18 @@ const Card = ({ id, text, index}) => {
       return {
         handleId: monitor.getHandlerId(),
       }
+    },
+    hover(item, monitor) {
+      if (!ref.current) {
+        return;
+      }
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+      moveCard(dragIndex, hoverIndex);
+      item.index = hoverIndex;
     }
   });
 
@@ -50,8 +63,18 @@ export const Container = () => {
     { id: 3, text: 'item3' },
   ]);
 
+  const moveCard = useCallback((dragIndex, hoverIndex) => {
+    const dragCard = cards[dragIndex];
+    setCards(update(cards, {
+      $splice: [
+        [dragIndex, 1],
+        [hoverIndex, 0, dragCard],
+      ],
+    }));
+  }, [cards]);
+
   const renderCard = (card, index) => {
-    return (<Card key={card.id} id={card.id} text={card.text} index={index} />);
+    return (<Card key={card.id} id={card.id} text={card.text} index={index} moveCard={moveCard} />);
   }
 
   return ( 
