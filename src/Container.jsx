@@ -3,34 +3,33 @@ import { useDrag, useDrop } from 'react-dnd';
 import update from 'immutability-helper';
 
 const cardStyle = {
-  border: '1px dashed gray',
+  border: '1px solid gray',
   padding: '0.5rem 1rem',
   marginBottom: '.5rem',
-  backgroundColor: 'white',
   cursor: 'move',
 }
 
-const Card = ({ id, text, index, moveCard}) => {
+const Card = ({ text, index, moveCard}) => {
   const ref = useRef(null); 
 
-  const [{ handlerId }, drop] = useDrop({
+  const [, drop] = useDrop({
     accept: 'card',
     collect(monitor) {
-      console.log('drop : ' + monitor.getHandlerId());
-      return {
-        handleId: monitor.getHandlerId(),
-      }
+      console.log('drop');  // dropイベント発生の処理
     },
-    hover(item, monitor) {
+    hover(item, monitor) {  // dragイベント中に自要素の上にdrag中の要素が重なっている時の処理
       if (!ref.current) {
         return;
       }
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      if (dragIndex === hoverIndex) {
+      const dragIndex = item.index; // 現在、ドラッグしている要素のindex
+      const hoverIndex = index;   // 現在、下にある要素のindex
+      if (dragIndex === hoverIndex) { // ドラッグしている要素と下にある要素が同じ場合は何もしない
         return;
       }
-      moveCard(dragIndex, hoverIndex);
+      console.log('hover');
+      console.log('dragIndex ', dragIndex);
+      console.log('hoverIndex', hoverIndex);
+      moveCard(dragIndex, hoverIndex);  // 要素の入れ替え
       item.index = hoverIndex;
     }
   });
@@ -38,19 +37,18 @@ const Card = ({ id, text, index, moveCard}) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'card',
     item: () => {
-      return { id, index };
+      return { index }; // hoverイベントなどで扱いたい要素のプロパティをここで定義
     },
-    collect: (monitor) => {
+    collect: (monitor) => { // dragイベント発生自の処理
       console.log('drag');
       return { isDragging: monitor.isDragging() }
     }
   })
 
-  const opacity = isDragging ? 0 : 1;
-
-  drag(drop(ref));
+  const opacity = isDragging ? 0 : 1; // 要素を掴んだ時に掴んだ要素を半透明にする処理
+  drag(drop(ref));  // dragとdropを同じ要素にする為の処理
   return (
-    <div ref={ref} style={{...cardStyle, opacity}} data-handler-id={handlerId}>
+    <div ref={ref} style={{...cardStyle, opacity}}>
       {text}
     </div>
   )
@@ -63,6 +61,7 @@ export const Container = () => {
     { id: 3, text: 'item3' },
   ]);
 
+  // 要素の入れ替え処理
   const moveCard = useCallback((dragIndex, hoverIndex) => {
     const dragCard = cards[dragIndex];
     setCards(update(cards, {
@@ -73,13 +72,13 @@ export const Container = () => {
     }));
   }, [cards]);
 
-  const renderCard = (card, index) => {
-    return (<Card key={card.id} id={card.id} text={card.text} index={index} moveCard={moveCard} />);
-  }
-
   return ( 
     <>
-      <div style={{witdh: 400}}>{cards.map((card, i) => renderCard(card, i))}</div>
+      <div style={{width: 400}}>
+        {cards.map((card, index) => 
+          (<Card key={card.id} text={card.text} index={index} moveCard={moveCard} />)
+        )}
+      </div>
     </>
   );
 }
