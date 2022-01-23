@@ -1,5 +1,5 @@
-import { useState } from 'react';
-
+import { useState, useRef } from 'react';
+import { useDrag } from 'react-dnd';
 
 const cardStyle = {
   border: '1px dashed gray',
@@ -10,9 +10,21 @@ const cardStyle = {
 }
 
 const Card = ({ id, text, index}) => {
+  const ref = useRef(null); 
 
+  const [{ isDragging }, drag] = useDrag({
+    type: 'card',
+    collect: (monitor) => {
+      console.log('drag');
+      return { isDragging: monitor.isDragging() }
+    }
+  })
+
+  const opacity = isDragging ? 0 : 1;
+
+  drag(ref);
   return (
-    <div style={cardStyle}>
+    <div style={ {...cardStyle, opacity} }>
       {text}
     </div>
   )
